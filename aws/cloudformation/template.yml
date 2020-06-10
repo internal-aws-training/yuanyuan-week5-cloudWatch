@@ -1,0 +1,143 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: For aws training - week 5
+Parameters:
+  LambdaFunctionName:
+    Description: Lambda Function Name
+    Default: yyl-week5-lambda-function
+    Type: String
+  LambdaPolicyLogName:
+    Description: Policy Name
+    Default: yyl-week5-lambda-policy-log
+    Type: String
+  LambdaCloudWatchPolicyName:
+    Description: Policy Name
+    Default: yyl-week5-lambda-cloudWatch-policy
+    Type: String
+  LambdaRoleName:
+    Description: Lambda Role Name
+    Default: yyl-week5-lambda-role
+    Type: String
+  SNSTopicName:
+    Description: SNS Topic Name
+    Default: yyl-week5-alarm-sns-topic
+    Type: String
+  LambdaMetricsAlarmName:
+    Description: Lambda Metrics Alarm Name
+    Default: yyl-week5-alarm-sns-topic
+    Type: String
+  CloudWatchMetricsNamespaceName:
+    Description: CloudWatch Metrics Namespace Name
+    Type: String
+    Default: yyl-week5-cloudWatch-metrics-namespace
+  LambdaMetricName:
+    Description: CloudWatch Metric Name
+    Type: String
+    Default: metrics-for-lambda
+  CloudWatchEventRoleName:
+    Description: CloudWatch Event Role Name
+    Default: yyl-week5-scheduled-rule
+    Type: String
+
+Resources:
+  MyLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Sub /aws/lambda/${LambdaFunctionName}
+      RetentionInDays: 7
+
+  MyLambda:
+    Type: AWS::Serverless::Function
+    DependsOn:
+      - MyLambdaLogGroup
+    Properties:
+      FunctionName: !Ref LambdaFunctionName
+      Role: !GetAtt MyLambdaRole.Arn
+      Handler: index.handler
+      Runtime: nodejs12.x
+      CodeUri: ../../output/
+      MemorySize: 128
+      Timeout: 3     
+
+  MyLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref LambdaRoleName
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: !Ref LambdaPolicyLogName
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+        - PolicyName: !Ref LambdaCloudWatchPolicyName
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - cloudwatch:PutMetricData
+                Resource: "*"
+  
+  PermissionForEventsToInvokeLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !GetAtt MyLambda.Arn
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt CloudWatchEventRole.Arn
+
+  CloudWatchEventRole:
+    Type: AWS::Events::Rule
+    Properties: 
+      Name: !Ref CloudWatchEventRoleName
+      Description: ScheduledRule in CloudWatch Event to trigger Lambda
+      ScheduleExpression: rate(1 minute)
+      State: ENABLED
+      Targets: 
+        - Arn: !GetAtt MyLambda.Arn
+          Id: !Ref LambdaFunctionName  
+
+  CloudWatchAlarm:
+    Type: AWS::CloudWatch::Alarm
+    DependsOn:
+      - SNSTopic
+    Properties:
+      AlarmActions:
+        - !Ref SNSTopic
+      AlarmDescription: Lambda Invoke
+      AlarmName: !Ref LambdaMetricsAlarmName
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 2
+      Statistic: Sum
+      #应用统计数据的周期为60s
+      Period: 300
+      #每次评估时长为多少个Period, 每次评估时间为: Period * EvaluationPeriods
+      EvaluationPeriods: 1
+      MetricName: !Ref LambdaMetricName
+      Namespace: !Ref CloudWatchMetricsNamespaceName
+      #与警报关联的指标的维度。
+      Dimensions:
+        - Name: hello_world
+          Value: Hello World!
+      
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties: 
+      TopicName: !Ref SNSTopicName
+      Subscription:
+        - Endpoint: "plin005@163.com"
+          Protocol: email
