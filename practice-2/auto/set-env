@@ -1,4 +1,4 @@
-STACK_NAME=yyl-week5-practice-1-stack
+STACK_NAME=yyl-week5-practice-2-stack
 DEPLOYMENT_BUCKET_NAME=yyl-deployment-bucket
 TEMPLATE=template.yml
 TEMPLATE_URL=./aws/cloudformation

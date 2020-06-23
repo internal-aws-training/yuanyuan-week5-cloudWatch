@@ -20,7 +20,7 @@ const process = async() => {
         },
       },
     ],
-    Namespace: 'yyl-week5-cloudWatch-metrics-namespace' /* required */,
+    Namespace: 'yyl-week5-practice-1-cloudWatch-metrics-namespace' /* required */,
   };
 
   const response = await cloudwatch.putMetricData(params).promise();

@@ -1,45 +1,45 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
-Description: For aws training - week 5 - practice 1
+Description: For aws training - week 5 - practice 2
 Parameters:
   LambdaFunctionName:
     Description: Lambda Function Name
-    Default: yyl-week5-practice-1-lambda-function
+    Default: yyl-week5-practice-2-lambda-function
     Type: String
   LambdaPolicyLogName:
     Description: Policy Name
-    Default: yyl-week5-practice-1-lambda-policy-log
+    Default: yyl-week5-practice-2-lambda-policy-log
     Type: String
   LambdaCloudWatchPolicyName:
     Description: Policy Name
-    Default: yyl-week5-practice-1-lambda-cloudWatch-policy
+    Default: yyl-week5-practice-2-lambda-cloudWatch-policy
     Type: String
   LambdaRoleName:
     Description: Lambda Role Name
-    Default: yyl-week5-practice-1-lambda-role
+    Default: yyl-week5-practice-2-lambda-role
     Type: String
   SNSTopicName:
     Description: SNS Topic Name
-    Default: yyl-week5-practice-1-sns-topic
+    Default: yyl-week5-practice-2-sns-topic
     Type: String
   LambdaMetricsAlarmName:
     Description: Lambda Metrics Alarm Name
-    Default: yyl-week5-practice-1-lambda-metrics-alarm
+    Default: yyl-week5-practice-2-lambda-metrics-alarm
     Type: String
   CloudWatchMetricsNamespaceName:
     Description: CloudWatch Metrics Namespace Name
     Type: String
-    Default: yyl-week5-practice-1-cloudWatch-metrics-namespace
+    Default: yyl-week5-practice-2-cloudWatch-metrics-namespace
   LambdaMetricName:
     Description: CloudWatch Metric Name
     Type: String
     Default: metrics-for-lambda
   CloudWatchEventRuleName:
     Description: CloudWatch Event Rule Name
-    Default: yyl-week5-practice-1-scheduled-rule
+    Default: yyl-week5-practice-2-scheduled-rule
     Type: String
 Resources:
-  MyLambdaLogGroup:
+  LambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName:
@@ -48,20 +48,20 @@ Resources:
   MyLambda:
     Type: AWS::Serverless::Function
     DependsOn:
-    - MyLambdaLogGroup
+    - LambdaLogGroup
     Properties:
       FunctionName:
         Ref: LambdaFunctionName
       Role:
         Fn::GetAtt:
-        - MyLambdaRole
+        - LambdaRole
         - Arn
       Handler: index.handler
       Runtime: nodejs12.x
-      CodeUri: s3://yyl-deployment-bucket/lambda/week5/40e65045b63382372de95b43f6fe984c
+      CodeUri: s3://yyl-deployment-bucket/lambda/week5/019194a8b5c5ccd616fed1b793475824
       MemorySize: 128
       Timeout: 3
-  MyLambdaRole:
+  LambdaRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName:
@@ -86,16 +86,7 @@ Resources:
             - logs:CreateLogGroup
             - logs:CreateLogStream
             - logs:PutLogEvents
-            Resource: arn:aws:logs:*:*:*
-      - PolicyName:
-          Ref: LambdaCloudWatchPolicyName
-        PolicyDocument:
-          Version: 2012-10-17
-          Statement:
-          - Effect: Allow
-            Action:
-            - cloudwatch:PutMetricData
-            Resource: '*'
+            Resource: arn:aws:logs:*:*:log-group:/aws/lambda/*:*
   PermissionForEventsToInvokeLambda:
     Type: AWS::Lambda::Permission
     Properties:
@@ -143,9 +134,18 @@ Resources:
         Ref: LambdaMetricName
       Namespace:
         Ref: CloudWatchMetricsNamespaceName
-      Dimensions:
-      - Name: hello_world
-        Value: Hello World!
+  CloudWatchLogMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName:
+        Ref: LambdaLogGroup
+      FilterPattern: INFO Logging
+      MetricTransformations:
+      - MetricNamespace:
+          Ref: CloudWatchMetricsNamespaceName
+        MetricName:
+          Ref: LambdaMetricName
+        MetricValue: 1
   MySNSTopic:
     Type: AWS::SNS::Topic
     Properties:
