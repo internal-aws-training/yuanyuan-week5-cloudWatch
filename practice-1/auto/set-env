@@ -1,9 +1,8 @@
-STACK_NAME=yyl-week5-stack-1
+STACK_NAME=yyl-week5-stack-practice-1
 DEPLOYMENT_BUCKET_NAME=yyl-deployment-bucket
 TEMPLATE=template.yml
 TEMPLATE_URL=./aws/cloudformation
 PACKAGED_TEMPLATE=packaged-${TEMPLATE}
-LAMBDA_NAME=yyl-week5-lambda-function-001
 REGION=ap-southeast-1
 
 display_status() {

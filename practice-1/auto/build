@@ -6,7 +6,7 @@ source ./auto/set-env
 
 display_status "1) Build lambda function image"
 IMAGE_NAME=yyl-week5-basic-lambda-function-image
-docker build -t ${IMAGE_NAME} .
+docker build -t ${IMAGE_NAME} ./
 
 display_status "2) Build lambda function to local 'output' folder"
 docker run \

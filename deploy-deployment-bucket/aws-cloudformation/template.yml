@@ -3,7 +3,7 @@ Description: For aws training - week 5
 Parameters:
   DeploymentBucketName:
     Description: Deployment Bucket Name
-    Default: yyl-deployment-bucket
+    Default: yyl-deployment-bucket-00
     Type: String
 
 Resources:

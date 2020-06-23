@@ -113,23 +113,27 @@ Resources:
 
   CloudWatchAlarm:
     Type: AWS::CloudWatch::Alarm
-    DependsOn:
-      - SNSTopic
+    # DependsOn:
+    #   - SNSTopic
     Properties:
       AlarmActions:
+        # alarm出发给SNS
         - !Ref SNSTopic
       AlarmDescription: Lambda Invoke
       AlarmName: !Ref LambdaMetricsAlarmName
-      ComparisonOperator: GreaterThanOrEqualToThreshold
+      # 设置指标阈值为 2
       Threshold: 2
+      # 对每次评估时长内的指标数进行汇总
       Statistic: Sum
-      #应用统计数据的周期为60s
+      # 将每次评估时长内, 检查如果符合的指标数大于或等于Threshold, 则发出警报
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      # 每次评估时长为多少个Period, 每次评估时间为: Period * EvaluationPeriods
+      # 应用统计数据的周期为60s
       Period: 300
-      #每次评估时长为多少个Period, 每次评估时间为: Period * EvaluationPeriods
       EvaluationPeriods: 1
       MetricName: !Ref LambdaMetricName
       Namespace: !Ref CloudWatchMetricsNamespaceName
-      #与警报关联的指标的维度。
+      # 与警报关联的指标的维度。
       Dimensions:
         - Name: hello_world
           Value: Hello World!

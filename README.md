@@ -58,3 +58,7 @@ StatusCheckFailed_System
 ## 4. 相关概念理解：metrics，periods，namespace，count，dimensions，statistics
 
 # Practice
+
+```
+./deploy-deployment-bucket/auto/deploy 
+```

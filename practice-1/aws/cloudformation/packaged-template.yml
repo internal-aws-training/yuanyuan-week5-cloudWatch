@@ -58,7 +58,7 @@ Resources:
         - Arn
       Handler: index.handler
       Runtime: nodejs12.x
-      CodeUri: s3://yyl-deployment-bucket/lambda/week5/5204783a282114ed47e8c7f415cec8f5
+      CodeUri: s3://yyl-deployment-bucket/lambda/week5/a57dca66542148a22eb74a948d3cc276
       MemorySize: 128
       Timeout: 3
   MyLambdaRole:
@@ -126,17 +126,15 @@ Resources:
           Ref: LambdaFunctionName
   CloudWatchAlarm:
     Type: AWS::CloudWatch::Alarm
-    DependsOn:
-    - SNSTopic
     Properties:
       AlarmActions:
       - Ref: SNSTopic
       AlarmDescription: Lambda Invoke
       AlarmName:
         Ref: LambdaMetricsAlarmName
-      ComparisonOperator: GreaterThanOrEqualToThreshold
       Threshold: 2
       Statistic: Sum
+      ComparisonOperator: GreaterThanOrEqualToThreshold
       Period: 300
       EvaluationPeriods: 1
       MetricName:
